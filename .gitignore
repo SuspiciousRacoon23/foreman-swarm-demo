@@ -1,0 +1,14 @@
+# Managed by Foreman — keeps secrets and Foreman-internal state out of the repo.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+id_rsa*
+id_ed25519*
+.foreman/
+node_modules/
+dist/
+.DS_Store
+*.log
+audit.jsonl
