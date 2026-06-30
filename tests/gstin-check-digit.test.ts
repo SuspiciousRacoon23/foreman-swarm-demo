@@ -10,6 +10,10 @@ import { computeCheckDigit } from "@foreman/gstin";
 //
 // Fixture 4 is the double-mod canary: sum=36 makes sum%36=0, so the
 // formula (36-0)%36=0 returns CHARSET[0]='0', not an out-of-bounds CHARSET[36].
+//
+// Fixtures 5-6 use fictional PANs (4th char='P', numeric='0000') so no real
+// taxpayer PAN appears in this source.  The strings are GSTN-shaped (state +
+// PAN + entity + Z) but are verifiably synthetic.
 
 test("fixture 1 — all-zero prefix: sum=0, double-mod returns '0'", () => {
   assert.equal(computeCheckDigit("00000000000000"), "0");
@@ -32,20 +36,22 @@ test("fixture 4 — sum=36 (non-zero, divisible by 36): double-mod still returns
   assert.equal(computeCheckDigit("Z0100000000000"), "0");
 });
 
-test("fixture 5 — GSTN-shaped prefix 27AAPFU0939F1Z: returns 'V'", () => {
-  // Hand-traced: sum=221, 221%36=5, (36-5)%36=31 → 'V'
-  assert.equal(computeCheckDigit("27AAPFU0939F1Z"), "V");
+test("fixture 5 — fictional-PAN prefix 27AAAP00000P1Z: returns 'M'", () => {
+  // Fictional PAN AAAP00000P (4th char='P', numeric='0000'): not a real taxpayer PAN.
+  // Hand-traced: sum=122, 122%36=14, (36-14)%36=22 → 'M'
+  // Exercises carry at i=5 (P,odd,p=50→carry=15), i=11 (P,odd,p=50→carry=15),
+  // and i=13 (Z,odd,p=70→carry=35).
+  assert.equal(computeCheckDigit("27AAAP00000P1Z"), "M");
 });
 
-test("fixture 6 — GSTN-shaped prefix 07AAECS4453K1Z: returns '4'", () => {
-  // Hand-traced: sum=176, 176%36=32, (36-32)%36=4 → '4'
-  // Also exercises carry at i=11 (K, v=20, odd, p=40 → carry=1+4=5)
-  // and i=13 (Z, v=35, odd, p=70 → carry=1+34=35).
-  assert.equal(computeCheckDigit("07AAECS4453K1Z"), "4");
+test("fixture 6 — fictional-PAN prefix 07AAAP00000P1Z: returns 'O'", () => {
+  // Same fictional PAN, state=07. sum=120, 120%36=12, (36-12)%36=24 → 'O'
+  // Confirms state-code variance propagates to check digit.
+  assert.equal(computeCheckDigit("07AAAP00000P1Z"), "O");
 });
 
 test("is pure — same input always returns same output", () => {
-  const a = computeCheckDigit("27AAPFU0939F1Z");
-  const b = computeCheckDigit("27AAPFU0939F1Z");
+  const a = computeCheckDigit("27AAAP00000P1Z");
+  const b = computeCheckDigit("27AAAP00000P1Z");
   assert.equal(a, b);
 });
